@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  PETUGAS_GUDANG
+  PIMPINAN
+  PEMINJAM
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RETURNED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(PEMINJAM)
+  createdAt DateTime @default(now())
+
+  loans Loan[]
+  approvedLoans Loan[] @relation("ApprovedBy")
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  kodeBarang  String   @unique
+  namaBarang  String
+  kategoriId  Int
+  quantity    Int      @default(0)
+  unit        String
+  fotoBarang  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category    Category @relation(fields: [kategoriId], references: [id])
+  stockIns    StockIn[]
+  stockOuts   StockOut[]
+  loans       Loan[]
+}
+
+model Supplier {
+  id   Int    @id @default(autoincrement())
+  name String
+  phone String?
+}
+
+model StockIn {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  qty       Int
+  date      DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id])
+}
+
+model StockOut {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  qty       Int
+  date      DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id])
+}
+
+model Loan {
+  id            Int        @id @default(autoincrement())
+  userId        Int
+  itemId        Int
+  qty           Int
+  status        LoanStatus @default(PENDING)
+  approvedById  Int?
+  approvedAt    DateTime?
+  borrowerName  String?
+  startDate     DateTime?
+  endDate       DateTime?
+  purpose       String?
+  rejectionReason String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user          User       @relation(fields: [userId], references: [id])
+  item          Item       @relation(fields: [itemId], references: [id])
+  approvedBy    User?      @relation("ApprovedBy", fields: [approvedById], references: [id])
+}
+
+model Category {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String?
+  items       Item[]
+}
