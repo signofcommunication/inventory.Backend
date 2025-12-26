@@ -33,7 +33,6 @@ export const update = async (
   data: Partial<{
     namaBarang: string;
     kategoriId: number;
-    quantity: number;
     unit: string;
     fotoBarang?: string;
   }>

@@ -47,32 +47,41 @@ export const create = async (
 };
 
 export const approveLoan = async (loanId: number, approvedById: number) => {
-  const loan = await repository.findByIdWithItem(loanId);
-  if (!loan) {
-    throw new Error("Loan not found");
-  }
+  return prisma.$transaction(async tx => {
+    const loan = await tx.loan.findUnique({
+      where: { id: loanId },
+      include: { item: true },
+    });
+    if (!loan) {
+      throw new Error("Loan not found");
+    }
 
-  if (loan.status !== LoanStatus.PENDING) {
-    throw new Error("Loan is not in pending status");
-  }
+    if (loan.status !== LoanStatus.PENDING) {
+      throw new Error("Loan is not in pending status");
+    }
 
-  const item = await prisma.item.findUnique({ where: { id: loan.itemId } });
-  if (!item || item.quantity < loan.qty) {
-    throw new Error("Insufficient stock for approval");
-  }
+    const item = await tx.item.findUnique({ where: { id: loan.itemId } });
+    if (!item || item.quantity < loan.qty) {
+      throw new Error("Insufficient stock for approval");
+    }
 
-  // Decrease stock
-  await prisma.item.update({
-    where: { id: loan.itemId },
-    data: { quantity: { decrement: loan.qty } },
+    // Decrease stock
+    await tx.item.update({
+      where: { id: loan.itemId },
+      data: { quantity: { decrement: loan.qty } },
+    });
+
+    // Update loan status
+    return tx.loan.update({
+      where: { id: loanId },
+      data: {
+        status: LoanStatus.APPROVED,
+        approvedById,
+        approvedAt: new Date(),
+      },
+      include: { item: true, user: true, approvedBy: true },
+    });
   });
-
-  return repository.updateStatus(
-    loanId,
-    LoanStatus.APPROVED,
-    approvedById,
-    new Date()
-  );
 };
 
 export const rejectLoan = async (
@@ -100,20 +109,30 @@ export const rejectLoan = async (
 };
 
 export const returnLoan = async (loanId: number) => {
-  const loan = await repository.findByIdWithItem(loanId);
-  if (!loan) {
-    throw new Error("Loan not found");
-  }
+  return prisma.$transaction(async tx => {
+    const loan = await tx.loan.findUnique({
+      where: { id: loanId },
+      include: { item: true },
+    });
+    if (!loan) {
+      throw new Error("Loan not found");
+    }
 
-  if (loan.status !== LoanStatus.APPROVED) {
-    throw new Error("Only approved loans can be returned");
-  }
+    if (loan.status !== LoanStatus.APPROVED) {
+      throw new Error("Only approved loans can be returned");
+    }
 
-  // Increase stock back
-  await prisma.item.update({
-    where: { id: loan.itemId },
-    data: { quantity: { increment: loan.qty } },
+    // Increase stock back
+    await tx.item.update({
+      where: { id: loan.itemId },
+      data: { quantity: { increment: loan.qty } },
+    });
+
+    // Update loan status
+    return tx.loan.update({
+      where: { id: loanId },
+      data: { status: LoanStatus.RETURNED },
+      include: { item: true, user: true },
+    });
   });
-
-  return repository.updateStatus(loanId, LoanStatus.RETURNED);
 };

@@ -136,7 +136,7 @@ export const create = [
   upload.single("fotoBarang"),
   async (req: Request, res: Response) => {
     try {
-      const { kodeBarang, namaBarang, kategoriId, quantity, unit } = req.body;
+      const { kodeBarang, namaBarang, kategoriId, unit } = req.body;
       const fotoBarang = req.file ? req.file.filename : undefined;
       if (!kodeBarang || !namaBarang || !kategoriId || !unit) {
         return res
@@ -155,7 +155,6 @@ export const create = [
         kodeBarang,
         namaBarang,
         kategoriId: kategoriIdNum,
-        quantity: quantity ? parseInt(quantity) : undefined,
         unit,
         fotoBarang,
       });

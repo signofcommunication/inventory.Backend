@@ -14,15 +14,11 @@ export const create = async (data: {
   kodeBarang: string;
   namaBarang: string;
   kategoriId: number;
-  quantity?: number;
   unit: string;
   fotoBarang?: string;
 }): Promise<Item> => {
   if (!data.kodeBarang || !data.namaBarang || !data.unit) {
     throw new Error("kodeBarang, namaBarang, and unit are required");
-  }
-  if (data.quantity !== undefined && data.quantity < 0) {
-    throw new Error("Quantity must be non-negative");
   }
   // Check if kategoriId exists
   const category = await prisma.category.findUnique({
@@ -42,7 +38,7 @@ export const create = async (data: {
     kodeBarang: data.kodeBarang,
     namaBarang: data.namaBarang,
     kategoriId: data.kategoriId,
-    quantity: data.quantity ?? 0,
+    quantity: 0, // Always start with 0
     unit: data.unit,
     fotoBarang: data.fotoBarang,
   };
@@ -54,14 +50,11 @@ export const update = async (
   data: Partial<{
     namaBarang: string;
     kategoriId: number;
-    quantity: number;
     unit: string;
     fotoBarang?: string;
   }>
 ): Promise<Item> => {
-  if (data.quantity !== undefined && data.quantity < 0) {
-    throw new Error("Quantity must be non-negative");
-  }
+  // Quantity is not allowed to be updated directly
   if (data.kategoriId !== undefined) {
     const category = await prisma.category.findUnique({
       where: { id: data.kategoriId },
@@ -73,6 +66,21 @@ export const update = async (
   return repo.update(id, data);
 };
 
-export const remove = (id: number): Promise<Item> => {
+export const remove = async (id: number): Promise<Item> => {
+  // Check if item has any transactions
+  const item = await prisma.item.findUnique({
+    where: { id },
+    include: {
+      stockIns: true,
+      stockOuts: true,
+      loans: true,
+    },
+  });
+  if (!item) {
+    throw new Error("Item not found");
+  }
+  if (item.stockIns.length > 0 || item.stockOuts.length > 0 || item.loans.length > 0) {
+    throw new Error("Cannot delete item with existing transactions");
+  }
   return repo.remove(id);
 };

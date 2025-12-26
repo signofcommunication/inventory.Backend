@@ -45,32 +45,36 @@ model Item {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  category    Category @relation(fields: [kategoriId], references: [id])
-  stockIns    StockIn[]
-  stockOuts   StockOut[]
-  loans       Loan[]
+  category  Category  @relation(fields: [kategoriId], references: [id])
+  stockIns  StockIn[]
+  stockOuts StockOut[]
+  loans     Loan[]
 }
 
 model Supplier {
-  id   Int    @id @default(autoincrement())
-  name String
-  phone String?
+  id      Int      @id @default(autoincrement())
+  name    String
+  phone   String?
+  stockIns StockIn[]
 }
 
 model StockIn {
-  id        Int      @id @default(autoincrement())
-  itemId    Int
-  qty       Int
-  date      DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  itemId     Int
+  supplierId Int
+  qty        Int
+  date       DateTime @default(now())
 
-  item Item @relation(fields: [itemId], references: [id])
+  item     Item     @relation(fields: [itemId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
 }
 
 model StockOut {
-  id        Int      @id @default(autoincrement())
-  itemId    Int
-  qty       Int
-  date      DateTime @default(now())
+  id     Int      @id @default(autoincrement())
+  itemId Int
+  qty    Int
+  reason String?
+  date   DateTime @default(now())
 
   item Item @relation(fields: [itemId], references: [id])
 }
