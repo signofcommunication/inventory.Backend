@@ -19,3 +19,24 @@ export const roleGuard = (allowedRoles: Role[]) => {
     next();
   };
 };
+
+export const onlySuperAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  if (req.user.role !== "SUPERADMIN") {
+    return res
+      .status(403)
+      .json({
+        success: false,
+        message: "Forbidden: Only SUPERADMIN can perform this action",
+      });
+  }
+
+  next();
+};

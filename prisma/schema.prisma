@@ -28,7 +28,9 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(PEMINJAM)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   loans Loan[]
   approvedLoans Loan[] @relation("ApprovedBy")

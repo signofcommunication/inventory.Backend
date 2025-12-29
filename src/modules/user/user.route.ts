@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { UserController } from "./user.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
+import { onlySuperAdmin } from "../../middlewares/role.middleware";
 
 const router = Router();
 const userController = new UserController();
+
+// Apply authMiddleware and onlySuperAdmin to all routes
+router.use(authMiddleware);
+router.use(onlySuperAdmin);
 
 /**
  * @swagger
@@ -95,7 +101,7 @@ router.post("/", userController.createUser.bind(userController));
  *       200:
  *         description: User updated successfully
  *   delete:
- *     summary: Delete user
+ *     summary: Delete user (soft delete)
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -113,5 +119,35 @@ router.post("/", userController.createUser.bind(userController));
 router.get("/:id", userController.getUserById.bind(userController));
 router.put("/:id", userController.updateUser.bind(userController));
 router.delete("/:id", userController.deleteUser.bind(userController));
+
+/**
+ * @swagger
+ * /users/{id}/status:
+ *   put:
+ *     summary: Update user status
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Only SUPERADMIN
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: User status updated successfully
+ */
+router.put("/:id/status", userController.updateUserStatus.bind(userController));
 
 export default router;

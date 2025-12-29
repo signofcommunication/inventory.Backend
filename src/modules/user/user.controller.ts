@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { UserService } from "./user.service";
 import { successResponse, errorResponse } from "../../shared/apiResponse";
+import { AuthRequest } from "../../middlewares/auth.middleware";
 
 const userService = new UserService();
 
@@ -39,7 +40,8 @@ export class UserController {
   async updateUser(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id);
-      const user = await userService.updateUser(id, req.body);
+      const currentUserId = (req as AuthRequest).user!.id;
+      const user = await userService.updateUser(id, req.body, currentUserId);
       if (!user) {
         return res.status(404).json(errorResponse("User not found"));
       }
@@ -49,16 +51,46 @@ export class UserController {
     }
   }
 
+  async updateUserStatus(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      if (typeof isActive !== "boolean") {
+        return res
+          .status(400)
+          .json(errorResponse("isActive must be a boolean"));
+      }
+      const currentUserId = (req as AuthRequest).user!.id;
+      const user = await userService.updateUserStatus(
+        id,
+        isActive,
+        currentUserId
+      );
+      if (!user) {
+        return res.status(404).json(errorResponse("User not found"));
+      }
+      res.json(
+        successResponse(
+          user,
+          `User ${isActive ? "activated" : "deactivated"} successfully`
+        )
+      );
+    } catch (error: any) {
+      res.status(400).json(errorResponse(error.message));
+    }
+  }
+
   async deleteUser(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id);
-      const user = await userService.deleteUser(id);
+      const currentUserId = (req as AuthRequest).user!.id;
+      const user = await userService.deleteUser(id, currentUserId);
       if (!user) {
         return res.status(404).json(errorResponse("User not found"));
       }
       res.json(successResponse(user, "User deleted successfully"));
     } catch (error: any) {
-      res.status(500).json(errorResponse(error.message));
+      res.status(400).json(errorResponse(error.message));
     }
   }
 }
