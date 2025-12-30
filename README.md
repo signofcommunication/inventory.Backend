@@ -310,6 +310,174 @@ Response:
 }
 ```
 
+### Reports
+
+#### Get Stock Report (JSON)
+
+```bash
+GET /reports/stock
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "item-id",
+      "name": "Item Name",
+      "code": "BRAND-CATEGORY-XXXX",
+      "brand": "Brand Name",
+      "category": "Category Name",
+      "totalStockIn": 100,
+      "totalStockOut": 20,
+      "totalLoans": 5
+    }
+  ]
+}
+```
+
+#### Get Stock Report (PDF)
+
+```bash
+GET /reports/stock/pdf
+Authorization: Bearer <token>
+```
+
+Response: PDF file download.
+
+#### Get Transaction Report (JSON)
+
+```bash
+GET /reports/transactions?startDate=2025-01-01&endDate=2025-12-31
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "stockIns": [
+      {
+        "type": "Stock In",
+        "item": "Item Name",
+        "qty": 50,
+        "supplier": "Supplier Name",
+        "date": "2025-01-01"
+      }
+    ],
+    "stockOuts": [
+      {
+        "type": "Stock Out",
+        "item": "Item Name",
+        "qty": 10,
+        "reason": "Usage",
+        "date": "2025-01-02"
+      }
+    ]
+  }
+}
+```
+
+#### Get Loan Report (JSON)
+
+```bash
+GET /reports/loans?status=PENDING
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "loan-id",
+      "item": "Item Name",
+      "borrower": "User Name",
+      "qty": 2,
+      "status": "PENDING",
+      "loanDate": "2025-01-01",
+      "returnDate": "",
+      "overdue": "No"
+    }
+  ]
+}
+```
+
+#### Get Supplier Report (JSON)
+
+```bash
+GET /reports/suppliers
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "name": "Supplier Name",
+      "totalTransactions": 5,
+      "totalQty": 200,
+      "lastTransaction": "2025-01-01"
+    }
+  ]
+}
+```
+
+#### Get Summary Report (JSON)
+
+```bash
+GET /reports/summary
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalItems": 50,
+    "totalSuppliers": 10,
+    "totalStockIn": 1000,
+    "totalStockOut": 200,
+    "totalLoans": 50,
+    "totalUsers": 20
+  }
+}
+```
+
+#### Get User Activity Report (JSON)
+
+```bash
+GET /reports/user-activity
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "name": "User Name",
+      "role": "ADMIN",
+      "totalLoans": 10
+    }
+  ]
+}
+```
+
 ## Project Structure
 
 - `src/`: Source code
