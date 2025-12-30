@@ -1,63 +1,70 @@
 // filepath: c:\Users\yamad\OneDrive\Documents\Work\Skripsi - Stanley Tedjadinata\inventory.Backend\src\modules\category\category.controller.ts
 import { Request, Response } from "express";
 import { CategoryService } from "./category.service";
-import { successResponse, errorResponse } from "../../shared/apiResponse";
+import { AuthRequest } from "../../middlewares/auth.middleware";
 
 const categoryService = new CategoryService();
 
 export class CategoryController {
-  async getAll(req: Request, res: Response) {
+  async createCategory(req: AuthRequest, res: Response) {
     try {
-      const categories = await categoryService.getAll();
-      res.json(
-        successResponse(categories, "Categories retrieved successfully")
-      );
+      const { name, code } = req.body;
+      const category = await categoryService.createCategory({ name, code });
+      res.status(201).json({ success: true, data: category });
     } catch (error: any) {
-      res.status(500).json(errorResponse(error.message));
+      res.status(400).json({ success: false, message: error.message });
     }
   }
 
-  async getById(req: Request, res: Response) {
+  async getAllCategories(req: AuthRequest, res: Response) {
     try {
-      const id = parseInt(req.params.id);
-      const category = await categoryService.getById(id);
-      if (!category) {
-        return res.status(404).json(errorResponse("Category not found"));
+      const categories = await categoryService.getAllCategories();
+      res.json({ success: true, data: categories });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async getCategoryById(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const category = await categoryService.getCategoryById(id);
+      res.json({ success: true, data: category });
+    } catch (error: any) {
+      if (error.message === "Category not found") {
+        res.status(404).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: error.message });
       }
-      res.json(successResponse(category, "Category retrieved successfully"));
-    } catch (error: any) {
-      res.status(500).json(errorResponse(error.message));
     }
   }
 
-  async create(req: Request, res: Response) {
+  async updateCategory(req: AuthRequest, res: Response) {
     try {
-      const category = await categoryService.create(req.body);
-      res
-        .status(201)
-        .json(successResponse(category, "Category created successfully"));
+      const { id } = req.params;
+      const { name } = req.body;
+      const category = await categoryService.updateCategory(id, { name });
+      res.json({ success: true, data: category });
     } catch (error: any) {
-      res.status(400).json(errorResponse(error.message));
+      if (error.message === "Category not found") {
+        res.status(404).json({ success: false, message: error.message });
+      } else {
+        res.status(400).json({ success: false, message: error.message });
+      }
     }
   }
 
-  async update(req: Request, res: Response) {
+  async deleteCategory(req: AuthRequest, res: Response) {
     try {
-      const id = parseInt(req.params.id);
-      const category = await categoryService.update(id, req.body);
-      res.json(successResponse(category, "Category updated successfully"));
+      const { id } = req.params;
+      await categoryService.deleteCategory(id);
+      res.json({ success: true, message: "Category deleted successfully" });
     } catch (error: any) {
-      res.status(400).json(errorResponse(error.message));
-    }
-  }
-
-  async remove(req: Request, res: Response) {
-    try {
-      const id = parseInt(req.params.id);
-      const category = await categoryService.remove(id);
-      res.json(successResponse(category, "Category deleted successfully"));
-    } catch (error: any) {
-      res.status(400).json(errorResponse(error.message));
+      if (error.message === "Category not found") {
+        res.status(404).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: error.message });
+      }
     }
   }
 }

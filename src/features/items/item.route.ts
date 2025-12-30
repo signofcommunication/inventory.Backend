@@ -1,7 +1,10 @@
 import { Router } from "express";
-import * as controller from "./item.controller";
+import { ItemController } from "./item.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
+import { roleGuard } from "../../middlewares/role.middleware";
 
 const router = Router();
+const itemController = new ItemController();
 
 /**
  * @swagger
@@ -11,7 +14,7 @@ const router = Router();
  *     tags: [Items]
  *     security:
  *       - bearerAuth: []
- *     description: Only SUPERADMIN and ADMIN
+ *     description: Accessible by SUPERADMIN, ADMIN, PETUGAS_GUDANG, and PIMPINAN
  *     responses:
  *       200:
  *         description: Items retrieved successfully
@@ -47,8 +50,18 @@ const router = Router();
  *       201:
  *         description: Item created successfully
  */
-router.get("/", controller.getAll);
-router.post("/", controller.create);
+router.post(
+  "/",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN"]),
+  itemController.createItem.bind(itemController)
+);
+router.get(
+  "/",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN", "PETUGAS_GUDANG", "PIMPINAN"]),
+  itemController.getAllItems.bind(itemController)
+);
 
 /**
  * @swagger
@@ -58,7 +71,7 @@ router.post("/", controller.create);
  *     tags: [Items]
  *     security:
  *       - bearerAuth: []
- *     description: Only SUPERADMIN and ADMIN
+ *     description: Accessible by SUPERADMIN, ADMIN, PETUGAS_GUDANG, and PIMPINAN
  *     parameters:
  *       - in: path
  *         name: id
@@ -107,7 +120,7 @@ router.post("/", controller.create);
  *     tags: [Items]
  *     security:
  *       - bearerAuth: []
- *     description: Only SUPERADMIN and ADMIN
+ *     description: Only SUPERADMIN
  *     parameters:
  *       - in: path
  *         name: id
@@ -118,8 +131,23 @@ router.post("/", controller.create);
  *       200:
  *         description: Item deleted successfully
  */
-router.get("/:id", controller.getById);
-router.put("/:id", ...controller.update);
-router.delete("/:id", controller.remove);
+router.get(
+  "/:id",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN", "PETUGAS_GUDANG", "PIMPINAN"]),
+  itemController.getItemById.bind(itemController)
+);
+router.put(
+  "/:id",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN"]),
+  itemController.updateItem.bind(itemController)
+);
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleGuard(["SUPERADMIN"]),
+  itemController.deleteItem.bind(itemController)
+);
 
 export default router;

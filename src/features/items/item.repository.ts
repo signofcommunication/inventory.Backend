@@ -1,52 +1,66 @@
-import { prisma } from "../../config/database";
-import { Item } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
-export const findAll = (): Promise<Item[]> => {
-  return prisma.item.findMany({
-    include: { category: true },
-  });
-};
+const prisma = new PrismaClient();
 
-export const findById = (id: number): Promise<Item | null> => {
-  return prisma.item.findUnique({
-    where: { id },
-    include: { category: true },
-  });
-};
+export class ItemRepository {
+  async create(data: {
+    name: string;
+    brandId: string;
+    categoryId: string;
+    itemCode: string;
+  }) {
+    return prisma.item.create({
+      data,
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
+  }
 
-export const create = (data: {
-  kodeBarang: string;
-  namaBarang: string;
-  kategoriId: number;
-  quantity: number;
-  unit: string;
-  fotoBarang?: string;
-}): Promise<Item> => {
-  return prisma.item.create({
-    data,
-    include: { category: true },
-  });
-};
+  async findAll() {
+    return prisma.item.findMany({
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
+  }
 
-export const update = async (
-  id: number,
-  data: Partial<{
-    namaBarang: string;
-    kategoriId: number;
-    unit: string;
-    fotoBarang?: string;
-  }>
-): Promise<Item> => {
-  const result = await prisma.item.update({
-    where: { id },
-    data,
-    include: { category: true },
-  });
-  return result;
-};
+  async findById(id: string) {
+    return prisma.item.findUnique({
+      where: { id },
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
+  }
 
-export const remove = (id: number): Promise<Item> => {
-  return prisma.item.delete({
-    where: { id },
-  });
-};
+  async findByItemCode(itemCode: string) {
+    return prisma.item.findUnique({
+      where: { itemCode },
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
+  }
+
+  async update(id: string, data: { name?: string }) {
+    return prisma.item.update({
+      where: { id },
+      data,
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
+  }
+
+  async delete(id: string) {
+    return prisma.item.delete({
+      where: { id },
+    });
+  }
+}

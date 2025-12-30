@@ -1,86 +1,79 @@
-import * as repo from "./item.repository";
-import { Item } from "@prisma/client";
-import { prisma } from "../../config/database";
+import { ItemRepository } from "./item.repository";
+import { ItemCodeGenerator } from "../../shared/itemCodeGenerator";
+import { PrismaClient } from "@prisma/client";
 
-export const getAll = (): Promise<Item[]> => {
-  return repo.findAll();
-};
+const prisma = new PrismaClient();
 
-export const getById = (id: number): Promise<Item | null> => {
-  return repo.findById(id);
-};
+export class ItemService {
+  private itemRepository = new ItemRepository();
 
-export const create = async (data: {
-  kodeBarang: string;
-  namaBarang: string;
-  kategoriId: number;
-  unit: string;
-  fotoBarang?: string;
-}): Promise<Item> => {
-  if (!data.kodeBarang || !data.namaBarang || !data.unit) {
-    throw new Error("kodeBarang, namaBarang, and unit are required");
-  }
-  // Check if kategoriId exists
-  const category = await prisma.category.findUnique({
-    where: { id: data.kategoriId },
-  });
-  if (!category) {
-    throw new Error("Invalid kategoriId: category does not exist");
-  }
-  // Check if kodeBarang is unique
-  const existing = await prisma.item.findUnique({
-    where: { kodeBarang: data.kodeBarang },
-  });
-  if (existing) {
-    throw new Error("kodeBarang must be unique");
-  }
-  const createData = {
-    kodeBarang: data.kodeBarang,
-    namaBarang: data.namaBarang,
-    kategoriId: data.kategoriId,
-    quantity: 0, // Always start with 0
-    unit: data.unit,
-    fotoBarang: data.fotoBarang,
-  };
-  return repo.create(createData);
-};
+  async createItem(data: {
+    name: string;
+    brandId: string;
+    categoryId: string;
+  }) {
+    return prisma.$transaction(async tx => {
+      // Check if brand exists and not deleted
+      const brand = await tx.brand.findUnique({
+        where: { id: data.brandId, isDeleted: false },
+      });
+      if (!brand) {
+        throw new Error("Brand not found or deleted");
+      }
 
-export const update = async (
-  id: number,
-  data: Partial<{
-    namaBarang: string;
-    kategoriId: number;
-    unit: string;
-    fotoBarang?: string;
-  }>
-): Promise<Item> => {
-  // Quantity is not allowed to be updated directly
-  if (data.kategoriId !== undefined) {
-    const category = await prisma.category.findUnique({
-      where: { id: data.kategoriId },
+      // Check if category exists and not deleted
+      const category = await tx.category.findUnique({
+        where: { id: data.categoryId, isDeleted: false },
+      });
+      if (!category) {
+        throw new Error("Category not found or deleted");
+      }
+
+      // Generate item code
+      const itemCode = await ItemCodeGenerator.generateItemCode(
+        brand.code,
+        category.code
+      );
+
+      // Check if itemCode already exists (should not, but safety)
+      const existingItem = await tx.item.findUnique({
+        where: { itemCode },
+      });
+      if (existingItem) {
+        throw new Error("Item code generation conflict");
+      }
+
+      return this.itemRepository.create({ ...data, itemCode });
     });
-    if (!category) {
-      throw new Error("Invalid kategoriId: category does not exist");
-    }
   }
-  return repo.update(id, data);
-};
 
-export const remove = async (id: number): Promise<Item> => {
-  // Check if item has any transactions
-  const item = await prisma.item.findUnique({
-    where: { id },
-    include: {
-      stockIns: true,
-      stockOuts: true,
-      loans: true,
-    },
-  });
-  if (!item) {
-    throw new Error("Item not found");
+  async getAllItems() {
+    return this.itemRepository.findAll();
   }
-  if (item.stockIns.length > 0 || item.stockOuts.length > 0 || item.loans.length > 0) {
-    throw new Error("Cannot delete item with existing transactions");
+
+  async getItemById(id: string) {
+    const item = await this.itemRepository.findById(id);
+    if (!item) {
+      throw new Error("Item not found");
+    }
+    return item;
   }
-  return repo.remove(id);
-};
+
+  async updateItem(id: string, data: { name?: string }) {
+    const item = await this.itemRepository.findById(id);
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    return this.itemRepository.update(id, data);
+  }
+
+  async deleteItem(id: string) {
+    const item = await this.itemRepository.findById(id);
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    return this.itemRepository.delete(id);
+  }
+}

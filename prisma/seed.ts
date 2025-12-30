@@ -73,6 +73,61 @@ async function main() {
     },
   });
   console.log("Peminjam created:", peminjam);
+
+  // Brands
+  const brand1 = await prisma.brand.upsert({
+    where: { code: "BRD" },
+    update: {},
+    create: {
+      name: "Brand Example",
+      code: "BRD",
+    },
+  });
+  console.log("Brand created:", brand1);
+
+  const brand2 = await prisma.brand.upsert({
+    where: { code: "ELC" },
+    update: {},
+    create: {
+      name: "Electronics",
+      code: "ELC",
+    },
+  });
+  console.log("Brand created:", brand2);
+
+  // Categories
+  const category1 = await prisma.category.upsert({
+    where: { code: "ELC" },
+    update: {},
+    create: {
+      name: "Electronics",
+      code: "ELC",
+    },
+  });
+  console.log("Category created:", category1);
+
+  const category2 = await prisma.category.upsert({
+    where: { code: "FUR" },
+    update: {},
+    create: {
+      name: "Furniture",
+      code: "FUR",
+    },
+  });
+  console.log("Category created:", category2);
+
+  // Items
+  const item1 = await prisma.item.upsert({
+    where: { itemCode: "BRD-ELC-0001" },
+    update: {},
+    create: {
+      name: "Laptop",
+      brandId: brand1.id,
+      categoryId: category1.id,
+      itemCode: "BRD-ELC-0001",
+    },
+  });
+  console.log("Item created:", item1);
 }
 
 main()

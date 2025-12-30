@@ -13,8 +13,11 @@
     "generate": "prisma generate",
     "seed": "ts-node prisma/seed.ts"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
-  "author": "",
+  "author": "Stanley Tedja",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",

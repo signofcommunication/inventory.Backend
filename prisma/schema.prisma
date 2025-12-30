@@ -23,11 +23,12 @@ enum LoanStatus {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid()) @db.VarChar(36)
   name      String
   email     String   @unique
   password  String
   role      Role     @default(PEMINJAM)
+  isDeleted Boolean  @default(false)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -36,34 +37,55 @@ model User {
   approvedLoans Loan[] @relation("ApprovedBy")
 }
 
+model Brand {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  name      String
+  code      String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+}
+
+model Category {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  name      String
+  code      String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+}
+
 model Item {
-  id          Int      @id @default(autoincrement())
-  kodeBarang  String   @unique
-  namaBarang  String
-  kategoriId  Int
-  quantity    Int      @default(0)
-  unit        String
-  fotoBarang  String?
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  name        String
+  brandId     String   @db.VarChar(36)
+  categoryId  String   @db.VarChar(36)
+  itemCode    String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  category  Category  @relation(fields: [kategoriId], references: [id])
+  brand     Brand     @relation(fields: [brandId], references: [id])
+  category  Category  @relation(fields: [categoryId], references: [id])
   stockIns  StockIn[]
   stockOuts StockOut[]
   loans     Loan[]
 }
 
 model Supplier {
-  id      Int      @id @default(autoincrement())
+  id      String   @id @default(uuid()) @db.VarChar(36)
   name    String
   phone   String?
   stockIns StockIn[]
 }
 
 model StockIn {
-  id         Int      @id @default(autoincrement())
-  itemId     Int
-  supplierId Int
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  itemId     String   @db.VarChar(36)
+  supplierId String   @db.VarChar(36)
   qty        Int
   date       DateTime @default(now())
 
@@ -72,8 +94,8 @@ model StockIn {
 }
 
 model StockOut {
-  id     Int      @id @default(autoincrement())
-  itemId Int
+  id     String   @id @default(uuid()) @db.VarChar(36)
+  itemId String   @db.VarChar(36)
   qty    Int
   reason String?
   date   DateTime @default(now())
@@ -82,29 +104,22 @@ model StockOut {
 }
 
 model Loan {
-  id            Int        @id @default(autoincrement())
-  userId        Int
-  itemId        Int
+  id            String      @id @default(uuid()) @db.VarChar(36)
+  userId        String      @db.VarChar(36)
+  itemId        String      @db.VarChar(36)
   qty           Int
-  status        LoanStatus @default(PENDING)
-  approvedById  Int?
+  status        LoanStatus  @default(PENDING)
+  approvedById  String?     @db.VarChar(36)
   approvedAt    DateTime?
   borrowerName  String?
   startDate     DateTime?
   endDate       DateTime?
   purpose       String?
   rejectionReason String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  user          User       @relation(fields: [userId], references: [id])
-  item          Item       @relation(fields: [itemId], references: [id])
-  approvedBy    User?      @relation("ApprovedBy", fields: [approvedById], references: [id])
-}
-
-model Category {
-  id          Int    @id @default(autoincrement())
-  name        String
-  description String?
-  items       Item[]
+  user          User        @relation(fields: [userId], references: [id])
+  item          Item        @relation(fields: [itemId], references: [id])
+  approvedBy    User?       @relation("ApprovedBy", fields: [approvedById], references: [id])
 }

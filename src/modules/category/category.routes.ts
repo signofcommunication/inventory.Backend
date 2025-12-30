@@ -1,6 +1,8 @@
 // filepath: c:\Users\yamad\OneDrive\Documents\Work\Skripsi - Stanley Tedjadinata\inventory.Backend\src\modules\category\category.routes.ts
 import { Router } from "express";
 import { CategoryController } from "./category.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
+import { roleGuard } from "../../middlewares/role.middleware";
 
 const router = Router();
 const categoryController = new CategoryController();
@@ -13,7 +15,7 @@ const categoryController = new CategoryController();
  *     tags: [Categories]
  *     security:
  *       - bearerAuth: []
- *     description: Accessible by all logged-in users
+ *     description: Accessible by SUPERADMIN, ADMIN, PETUGAS_GUDANG, and PIMPINAN
  *     responses:
  *       200:
  *         description: Categories retrieved successfully
@@ -42,8 +44,18 @@ const categoryController = new CategoryController();
  *       201:
  *         description: Category created successfully
  */
-router.get("/", categoryController.getAll.bind(categoryController));
-router.post("/", categoryController.create.bind(categoryController));
+router.get(
+  "/",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN", "PETUGAS_GUDANG", "PIMPINAN"]),
+  categoryController.getAllCategories.bind(categoryController)
+);
+router.post(
+  "/",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN"]),
+  categoryController.createCategory.bind(categoryController)
+);
 
 /**
  * @swagger
@@ -53,7 +65,7 @@ router.post("/", categoryController.create.bind(categoryController));
  *     tags: [Categories]
  *     security:
  *       - bearerAuth: []
- *     description: Accessible by all logged-in users
+ *     description: Accessible by SUPERADMIN, ADMIN, PETUGAS_GUDANG, and PIMPINAN
  *     parameters:
  *       - in: path
  *         name: id
@@ -117,8 +129,23 @@ router.post("/", categoryController.create.bind(categoryController));
  *       400:
  *         description: Cannot delete category that is used by items
  */
-router.get("/:id", categoryController.getById.bind(categoryController));
-router.put("/:id", categoryController.update.bind(categoryController));
-router.delete("/:id", categoryController.remove.bind(categoryController));
+router.get(
+  "/:id",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN", "PETUGAS_GUDANG", "PIMPINAN"]),
+  categoryController.getCategoryById.bind(categoryController)
+);
+router.put(
+  "/:id",
+  authMiddleware,
+  roleGuard(["SUPERADMIN", "ADMIN"]),
+  categoryController.updateCategory.bind(categoryController)
+);
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleGuard(["SUPERADMIN"]),
+  categoryController.deleteCategory.bind(categoryController)
+);
 
 export default router;
