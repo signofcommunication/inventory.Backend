@@ -48,8 +48,8 @@ export const getAll = async (req: Request, res: Response) => {
  */
 export const getById = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const id = req.params.id;
+    if (!id) {
       return res.status(400).json(errorResponse("Invalid ID"));
     }
     const supplier = await service.getById(id);
@@ -79,6 +79,8 @@ export const getById = async (req: Request, res: Response) => {
  *                 type: string
  *               phone:
  *                 type: string
+ *               address:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Supplier created successfully
@@ -89,11 +91,11 @@ export const getById = async (req: Request, res: Response) => {
  */
 export const create = async (req: Request, res: Response) => {
   try {
-    const { name, phone } = req.body;
+    const { name, phone, address } = req.body;
     if (!name) {
       return res.status(400).json(errorResponse("Name is required"));
     }
-    const supplier = await service.create({ name, phone });
+    const supplier = await service.create({ name, phone, address });
     res
       .status(201)
       .json(successResponse(supplier, "Supplier created successfully"));
@@ -126,6 +128,8 @@ export const create = async (req: Request, res: Response) => {
  *                 type: string
  *               phone:
  *                 type: string
+ *               address:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Supplier updated successfully
@@ -138,14 +142,15 @@ export const create = async (req: Request, res: Response) => {
  */
 export const update = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const id = req.params.id;
+    if (!id) {
       return res.status(400).json(errorResponse("Invalid ID"));
     }
-    const { name, phone } = req.body;
+    const { name, phone, address } = req.body;
     const updateData: any = {};
     if (name) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
+    if (address !== undefined) updateData.address = address;
     const supplier = await service.update(id, updateData);
     res.json(successResponse(supplier, "Supplier updated successfully"));
   } catch (error: any) {
@@ -182,8 +187,8 @@ export const update = async (req: Request, res: Response) => {
  */
 export const remove = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const id = req.params.id;
+    if (!id) {
       return res.status(400).json(errorResponse("Invalid ID"));
     }
     await service.remove(id);

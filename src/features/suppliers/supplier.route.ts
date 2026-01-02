@@ -32,6 +32,8 @@ const router = Router();
  *                 type: string
  *               phone:
  *                 type: string
+ *               address:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Supplier created successfully
@@ -79,6 +81,8 @@ router.post("/", controller.create);
  *               name:
  *                 type: string
  *               phone:
+ *                 type: string
+ *               address:
  *                 type: string
  *     responses:
  *       200:

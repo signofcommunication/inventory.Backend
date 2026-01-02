@@ -5,13 +5,14 @@ export const getAll = (): Promise<Supplier[]> => {
   return repo.findAll();
 };
 
-export const getById = (id: number): Promise<Supplier | null> => {
+export const getById = (id: string): Promise<Supplier | null> => {
   return repo.findById(id);
 };
 
 export const create = (data: {
   name: string;
   phone?: string;
+  address?: string;
 }): Promise<Supplier> => {
   if (!data.name) {
     throw new Error("Name is required");
@@ -20,12 +21,12 @@ export const create = (data: {
 };
 
 export const update = (
-  id: number,
-  data: Partial<{ name: string; phone?: string }>
+  id: string,
+  data: Partial<{ name: string; phone?: string; address?: string }>
 ): Promise<Supplier> => {
   return repo.update(id, data);
 };
 
-export const remove = (id: number): Promise<Supplier> => {
+export const remove = (id: string): Promise<Supplier> => {
   return repo.remove(id);
 };
