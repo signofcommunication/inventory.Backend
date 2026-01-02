@@ -3,13 +3,21 @@ import { CategoryRepository } from "./category.repository";
 export class CategoryService {
   private categoryRepository = new CategoryRepository();
 
-  async createCategory(data: { name: string; code: string }) {
+  async createCategory(data: { name: string; description?: string }) {
+    // Validate input
+    if (!data.name) {
+      throw new Error("Name is required");
+    }
+
+    // Generate code from first 3 letters of name, uppercase
+    const code = data.name.substring(0, 3).toUpperCase();
+
     // Check if code already exists
-    const existingCategory = await this.categoryRepository.findByCode(
-      data.code
-    );
+    const existingCategory = await this.categoryRepository.findByCode(code);
     if (existingCategory) {
-      throw new Error("Category code already exists");
+      throw new Error(
+        `Generated category code '${code}' already exists. Please choose a different name.`
+      );
     }
 
     return this.categoryRepository.create(data);
@@ -27,12 +35,10 @@ export class CategoryService {
     return category;
   }
 
-  async updateCategory(id: string, data: { name?: string; code?: string }) {
-    // Code cannot be updated
-    if (data.code) {
-      throw new Error("Category code cannot be updated");
-    }
-
+  async updateCategory(
+    id: string,
+    data: { name?: string; description?: string }
+  ) {
     const category = await this.categoryRepository.findById(id);
     if (!category) {
       throw new Error("Category not found");

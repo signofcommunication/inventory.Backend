@@ -8,8 +8,19 @@ const categoryService = new CategoryService();
 export class CategoryController {
   async createCategory(req: AuthRequest, res: Response) {
     try {
-      const { name, code } = req.body;
-      const category = await categoryService.createCategory({ name, code });
+      const { name, description } = req.body;
+
+      // Validate required fields
+      if (!name) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Name is required" });
+      }
+
+      const category = await categoryService.createCategory({
+        name,
+        description,
+      });
       res.status(201).json({ success: true, data: category });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
@@ -42,8 +53,11 @@ export class CategoryController {
   async updateCategory(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const { name } = req.body;
-      const category = await categoryService.updateCategory(id, { name });
+      const { name, description } = req.body;
+      const category = await categoryService.updateCategory(id, {
+        name,
+        description,
+      });
       res.json({ success: true, data: category });
     } catch (error: any) {
       if (error.message === "Category not found") {
