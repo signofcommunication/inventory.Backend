@@ -11,7 +11,13 @@ export class ItemService {
     name: string;
     brandId: string;
     categoryId: string;
+    imageUrl: string;
   }) {
+    // Validate imageUrl is provided
+    if (!data.imageUrl) {
+      throw new Error("Image is required for item creation");
+    }
+
     return prisma.$transaction(async tx => {
       // Check if brand exists and not deleted
       const brand = await tx.brand.findUnique({
@@ -59,7 +65,7 @@ export class ItemService {
     return item;
   }
 
-  async updateItem(id: string, data: { name?: string }) {
+  async updateItem(id: string, data: { name?: string; imageUrl?: string }) {
     const item = await this.itemRepository.findById(id);
     if (!item) {
       throw new Error("Item not found");

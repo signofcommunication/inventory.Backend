@@ -2,9 +2,37 @@ import { Router } from "express";
 import { ItemController } from "./item.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { roleGuard } from "../../middlewares/role.middleware";
+import multer from "multer";
+import path from "path";
 
 const router = Router();
 const itemController = new ItemController();
+
+// Reuse multer config from controller
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/items/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+    );
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"));
+    }
+  },
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
 
 /**
  * @swagger
@@ -31,21 +59,16 @@ const itemController = new ItemController();
  *           schema:
  *             type: object
  *             properties:
- *               kodeBarang:
+ *               name:
  *                 type: string
- *               namaBarang:
+ *               brandId:
  *                 type: string
- *               kategoriId:
- *                 type: integer
- *               quantity:
- *                 type: integer
- *                 default: 0
- *               unit:
+ *               categoryId:
  *                 type: string
- *               fotoBarang:
+ *               image:
  *                 type: string
  *                 format: binary
- *                 description: Image file (optional)
+ *                 description: Image file (required)
  *     responses:
  *       201:
  *         description: Item created successfully
@@ -54,6 +77,7 @@ router.post(
   "/",
   authMiddleware,
   roleGuard(["SUPERADMIN", "ADMIN"]),
+  upload.single("image"),
   itemController.createItem.bind(itemController)
 );
 router.get(
@@ -100,15 +124,9 @@ router.get(
  *           schema:
  *             type: object
  *             properties:
- *               namaBarang:
+ *               name:
  *                 type: string
- *               kategoriId:
- *                 type: integer
- *               quantity:
- *                 type: integer
- *               unit:
- *                 type: string
- *               fotoBarang:
+ *               image:
  *                 type: string
  *                 format: binary
  *                 description: Image file (optional)
@@ -141,6 +159,7 @@ router.put(
   "/:id",
   authMiddleware,
   roleGuard(["SUPERADMIN", "ADMIN"]),
+  upload.single("image"),
   itemController.updateItem.bind(itemController)
 );
 router.delete(

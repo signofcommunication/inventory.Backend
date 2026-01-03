@@ -8,6 +8,7 @@ export class ItemRepository {
     brandId: string;
     categoryId: string;
     itemCode: string;
+    imageUrl: string;
   }) {
     return prisma.item.create({
       data,
@@ -47,7 +48,7 @@ export class ItemRepository {
     });
   }
 
-  async update(id: string, data: { name?: string }) {
+  async update(id: string, data: { name?: string; imageUrl?: string }) {
     return prisma.item.update({
       where: { id },
       data,

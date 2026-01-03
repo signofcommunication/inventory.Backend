@@ -13,6 +13,9 @@ app.use(express.json());
 
 app.use("/api", routes);
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
