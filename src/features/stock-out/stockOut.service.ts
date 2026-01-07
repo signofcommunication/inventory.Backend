@@ -8,7 +8,7 @@ export const getAll = (): Promise<StockOut[]> => {
 };
 
 export const create = async (
-  itemId: number,
+  itemId: string,
   qty: number,
   reason?: string
 ): Promise<StockOut> => {
@@ -22,7 +22,20 @@ export const create = async (
     if (!item) {
       throw new Error("Item not found");
     }
-    if (item.quantity < qty) {
+
+    // Calculate current quantity
+    const totalStockIn = await tx.stockIn.aggregate({
+      where: { itemId },
+      _sum: { qty: true },
+    });
+    const totalStockOut = await tx.stockOut.aggregate({
+      where: { itemId },
+      _sum: { qty: true },
+    });
+    const currentQty =
+      (totalStockIn._sum.qty || 0) - (totalStockOut._sum.qty || 0);
+
+    if (currentQty < qty) {
       throw new Error("Insufficient stock");
     }
 

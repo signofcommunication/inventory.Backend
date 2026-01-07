@@ -8,8 +8,8 @@ export const getAll = (): Promise<StockIn[]> => {
 };
 
 export const create = async (
-  itemId: number,
-  supplierId: number,
+  itemId: string,
+  supplierId: string,
   qty: number
 ): Promise<StockIn> => {
   if (qty <= 0) {

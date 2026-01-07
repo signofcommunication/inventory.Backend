@@ -2,7 +2,7 @@ import { prisma } from "../../config/database";
 import { Loan, LoanStatus } from "@prisma/client";
 import * as repository from "./loan.repository";
 
-export const getAll = (userId?: number, role?: string): Promise<Loan[]> => {
+export const getAll = (userId?: string, role?: string): Promise<Loan[]> => {
   const where: any = {};
   if (role === "PEMINJAM" && userId) {
     where.userId = userId;
@@ -11,8 +11,8 @@ export const getAll = (userId?: number, role?: string): Promise<Loan[]> => {
 };
 
 export const create = async (
-  userId: number,
-  itemId: number,
+  userId: string,
+  itemId: string,
   qty: number,
   borrowerName?: string,
   startDate?: Date,
@@ -46,7 +46,7 @@ export const create = async (
   );
 };
 
-export const approveLoan = async (loanId: number, approvedById: number) => {
+export const approveLoan = async (loanId: string, approvedById: string) => {
   return prisma.$transaction(async tx => {
     const loan = await tx.loan.findUnique({
       where: { id: loanId },
@@ -85,8 +85,8 @@ export const approveLoan = async (loanId: number, approvedById: number) => {
 };
 
 export const rejectLoan = async (
-  loanId: number,
-  approvedById: number,
+  loanId: string,
+  approvedById: string,
   reason?: string
 ) => {
   const loan = await repository.findByIdWithItem(loanId);
@@ -108,7 +108,7 @@ export const rejectLoan = async (
   );
 };
 
-export const returnLoan = async (loanId: number) => {
+export const returnLoan = async (loanId: string) => {
   return prisma.$transaction(async tx => {
     const loan = await tx.loan.findUnique({
       where: { id: loanId },

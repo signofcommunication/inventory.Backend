@@ -2,7 +2,7 @@
 import { prisma } from "../../config/database";
 import { Loan, LoanStatus } from "@prisma/client";
 
-export const findByIdWithItem = (id: number): Promise<Loan | null> => {
+export const findByIdWithItem = (id: string): Promise<Loan | null> => {
   return prisma.loan.findUnique({
     where: { id },
     include: { item: true, user: true, approvedBy: true },
@@ -10,9 +10,9 @@ export const findByIdWithItem = (id: number): Promise<Loan | null> => {
 };
 
 export const updateStatus = async (
-  id: number,
+  id: string,
   status: LoanStatus,
-  approvedById?: number,
+  approvedById?: string,
   approvedAt?: Date,
   rejectionReason?: string
 ): Promise<Loan> => {
@@ -38,8 +38,8 @@ export const getAll = (where?: any): Promise<Loan[]> => {
 };
 
 export const create = async (
-  userId: number,
-  itemId: number,
+  userId: string,
+  itemId: string,
   qty: number,
   borrowerName?: string,
   startDate?: Date,
