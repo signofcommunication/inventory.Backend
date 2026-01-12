@@ -17,7 +17,7 @@ export class UserController {
 
   async getUserById(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const user = await userService.getUserById(id);
       if (!user) {
         return res.status(404).json(errorResponse("User not found"));
@@ -39,7 +39,7 @@ export class UserController {
 
   async updateUser(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const currentUserId = (req as AuthRequest).user!.id;
       const user = await userService.updateUser(id, req.body, currentUserId);
       if (!user) {
@@ -53,7 +53,7 @@ export class UserController {
 
   async updateUserStatus(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const { isActive } = req.body;
       if (typeof isActive !== "boolean") {
         return res
@@ -82,7 +82,7 @@ export class UserController {
 
   async deleteUser(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const currentUserId = (req as AuthRequest).user!.id;
       const user = await userService.deleteUser(id, currentUserId);
       if (!user) {

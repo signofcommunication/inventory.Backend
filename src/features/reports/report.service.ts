@@ -6,7 +6,7 @@ import path from "path";
 const kopSuratPath = path.join(__dirname, "../../../assets/KOP SURAT.png");
 
 // Helper to generate PDF with header
-const generatePDF = (
+export const generatePDF = (
   title: string,
   data: any[],
   columns: string[]
@@ -363,9 +363,9 @@ export const getStockReport = async () => {
     include: {
       brand: true,
       category: true,
-      stockIns: true,
-      stockOuts: true,
-      loans: true,
+      stockin: true,
+      stockout: true,
+      loan: true,
     },
   });
 
@@ -375,9 +375,9 @@ export const getStockReport = async () => {
     code: item.itemCode,
     brand: item.brand?.name || "",
     category: item.category?.name || "",
-    totalStockIn: item.stockIns.reduce((sum: number, si) => sum + si.qty, 0),
-    totalStockOut: item.stockOuts.reduce((sum: number, so) => sum + so.qty, 0),
-    totalLoans: item.loans
+    totalStockIn: item.stockin.reduce((sum: number, si) => sum + si.qty, 0),
+    totalStockOut: item.stockout.reduce((sum: number, so) => sum + so.qty, 0),
+    totalLoans: item.loan
       .filter(l => l.status !== "RETURNED")
       .reduce((sum: number, l) => sum + l.qty, 0),
   }));
@@ -484,16 +484,16 @@ export const getLoanReportPDF = async (status?: string) => {
 
 export const getSupplierReport = async () => {
   const suppliers = await prisma.supplier.findMany({
-    include: { stockIns: { include: { item: true } } },
+    include: { stockin: { include: { item: true } } },
   });
 
   return suppliers.map(sup => ({
     name: sup.name,
-    totalTransactions: sup.stockIns.length,
-    totalQty: sup.stockIns.reduce((sum: number, si) => sum + si.qty, 0),
+    totalTransactions: sup.stockin.length,
+    totalQty: sup.stockin.reduce((sum: number, si) => sum + si.qty, 0),
     lastTransaction:
-      sup.stockIns.length > 0
-        ? sup.stockIns[sup.stockIns.length - 1].date.toISOString().split("T")[0]
+      sup.stockin.length > 0
+        ? sup.stockin[sup.stockin.length - 1].date.toISOString().split("T")[0]
         : "",
   }));
 };

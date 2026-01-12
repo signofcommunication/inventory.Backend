@@ -13,11 +13,12 @@ export class UserRepository {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        isDeleted: true,
       },
     });
   }
 
-  async findById(id: number): Promise<Omit<User, "password"> | null> {
+  async findById(id: string): Promise<Omit<User, "password"> | null> {
     return prisma.user.findUnique({
       where: { id },
       select: {
@@ -28,6 +29,7 @@ export class UserRepository {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        isDeleted: true,
       },
     });
   }
@@ -48,7 +50,7 @@ export class UserRepository {
   }
 
   async update(
-    id: number,
+    id: string,
     data: Partial<{
       name: string;
       email: string;
@@ -66,7 +68,7 @@ export class UserRepository {
     }
   }
 
-  async delete(id: number): Promise<Omit<User, "password"> | null> {
+  async delete(id: string): Promise<Omit<User, "password"> | null> {
     // Soft delete: set isActive to false
     try {
       const user = await prisma.user.update({

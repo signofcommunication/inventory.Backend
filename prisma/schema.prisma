@@ -13,7 +13,7 @@ model Brand {
   code      String   @unique(map: "Brand_code_key")
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @default(now())
   item      Item[]
 
   @@map("brand")
@@ -25,7 +25,7 @@ model Category {
   code        String   @unique(map: "Category_code_key")
   createdAt   DateTime @default(now())
   isDeleted   Boolean  @default(false)
-  updatedAt   DateTime
+  updatedAt   DateTime @default(now())
   description String?
   item        Item[]
 
@@ -35,7 +35,7 @@ model Category {
 model Item {
   id         String     @id @default(uuid()) @db.VarChar(36)
   createdAt  DateTime   @default(now())
-  updatedAt  DateTime
+  updatedAt  DateTime   @default(now())
   brandId    String     @db.VarChar(36)
   categoryId String     @db.VarChar(36)
   itemCode   String     @unique(map: "Item_itemCode_key")
@@ -61,16 +61,16 @@ model Loan {
   approvedById                 String?     @db.VarChar(36)
   createdAt                    DateTime    @default(now())
   status                       LoanStatus  @default(PENDING)
-  updatedAt                    DateTime
+  updatedAt                    DateTime    @default(now())
   userId                       String      @db.VarChar(36)
   borrowerName                 String?
   endDate                      DateTime?
   purpose                      String?
   rejectionReason              String?
   startDate                    DateTime?
-  user_loan_approvedByIdTouser User?       @relation("loan_approvedByIdTouser", fields: [approvedById], references: [id], map: "Loan_approvedById_fkey")
+  approvedBy                   User?       @relation("loan_approvedBy", fields: [approvedById], references: [id], map: "Loan_approvedById_fkey")
   item                         Item        @relation(fields: [itemId], references: [id], map: "Loan_itemId_fkey")
-  user_loan_userIdTouser       User        @relation("loan_userIdTouser", fields: [userId], references: [id], map: "Loan_userId_fkey")
+  user                         User        @relation("loan_user", fields: [userId], references: [id], map: "Loan_userId_fkey")
 
   @@index([approvedById], map: "Loan_approvedById_fkey")
   @@index([itemId], map: "Loan_itemId_fkey")
@@ -85,10 +85,11 @@ model StockIn {
   date       DateTime @default(now())
   supplierId String   @db.VarChar(36)
   item       Item     @relation(fields: [itemId], references: [id], map: "StockIn_itemId_fkey")
-  supplier   Supplier  @relation(fields: [supplierId], references: [id], map: "StockIn_supplierId_fkey")
+  supplier   Supplier @relation(fields: [supplierId], references: [id], map: "StockIn_supplierId_fkey")
 
   @@index([itemId], map: "StockIn_itemId_fkey")
   @@index([supplierId], map: "StockIn_supplierId_fkey")
+  @@map("stockin")
 }
 
 model StockOut {
@@ -121,10 +122,10 @@ model User {
   role                         Role      @default(PEMINJAM)
   createdAt                    DateTime  @default(now())
   isActive                     Boolean   @default(true)
-  updatedAt                    DateTime
+  updatedAt                    DateTime  @default(now())
   isDeleted                    Boolean   @default(false)
-  loan_loan_approvedByIdTouser Loan[]    @relation("loan_approvedByIdTouser")
-  loan_loan_userIdTouser       Loan[]    @relation("loan_userIdTouser")
+  approvedLoans                Loan[]    @relation("loan_approvedBy")
+  loans                        Loan[]    @relation("loan_user")
 
   @@map("user")
 }

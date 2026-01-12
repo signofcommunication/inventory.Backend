@@ -113,7 +113,7 @@ export const create = async (req: AuthRequest, res: Response) => {
 export const approveLoan = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const data = await service.approveLoan(parseInt(id), req.user!.id);
+    const data = await service.approveLoan(id, req.user!.id);
     res.json(successResponse(data, "Loan approved successfully"));
   } catch (error: any) {
     if (error.message.includes("not found")) {
@@ -162,7 +162,7 @@ export const rejectLoan = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
-    const data = await service.rejectLoan(parseInt(id), req.user!.id, reason);
+    const data = await service.rejectLoan(id, req.user!.id, reason);
     res.json(successResponse(data, "Loan rejected successfully"));
   } catch (error: any) {
     if (error.message.includes("not found")) {
@@ -201,7 +201,7 @@ export const rejectLoan = async (req: AuthRequest, res: Response) => {
 export const returnLoan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const data = await service.returnLoan(parseInt(id));
+    const data = await service.returnLoan(id);
     res.json(successResponse(data, "Loan returned successfully"));
   } catch (error: any) {
     if (error.message.includes("not found")) {

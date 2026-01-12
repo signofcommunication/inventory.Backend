@@ -10,7 +10,7 @@ export class UserService {
     return userRepository.findAll();
   }
 
-  async getUserById(id: number) {
+  async getUserById(id: string) {
     return userRepository.findById(id);
   }
 
@@ -30,7 +30,7 @@ export class UserService {
   }
 
   async updateUser(
-    id: number,
+    id: string,
     data: Partial<{
       name: string;
       email: string;
@@ -38,7 +38,7 @@ export class UserService {
       role: Role;
       isActive: boolean;
     }>,
-    currentUserId: number
+    currentUserId: string
   ) {
     // Prevent user from changing their own role
     if (data.role && id === currentUserId) {
@@ -50,7 +50,7 @@ export class UserService {
     return userRepository.update(id, data);
   }
 
-  async updateUserStatus(id: number, isActive: boolean, currentUserId: number) {
+  async updateUserStatus(id: string, isActive: boolean, currentUserId: string) {
     // Prevent SUPERADMIN from deactivating themselves
     if (!isActive && id === currentUserId) {
       const user = await userRepository.findById(id);
@@ -61,7 +61,7 @@ export class UserService {
     return userRepository.update(id, { isActive });
   }
 
-  async deleteUser(id: number, currentUserId: number) {
+  async deleteUser(id: string, currentUserId: string) {
     // Prevent SUPERADMIN from deleting themselves
     if (id === currentUserId) {
       const user = await userRepository.findById(id);
