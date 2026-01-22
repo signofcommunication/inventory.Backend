@@ -432,6 +432,7 @@ export const getTransactionReport = async (
       item: so.item.name,
       qty: so.qty,
       reason: so.reason || "",
+      borrower: so.borrower || "",
       date: so.date.toISOString().split("T")[0],
     })),
   };
@@ -443,7 +444,15 @@ export const getTransactionReportPDF = async (
 ) => {
   const data = await getTransactionReport(startDate, endDate);
   const allData = [...data.stockIns, ...data.stockOuts];
-  const columns = ["type", "item", "qty", "supplier", "reason", "date"];
+  const columns = [
+    "type",
+    "item",
+    "qty",
+    "supplier",
+    "reason",
+    "borrower",
+    "date",
+  ];
   return generatePDF("Transaction Report", allData, columns);
 };
 

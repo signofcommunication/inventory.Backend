@@ -93,12 +93,13 @@ model StockIn {
 }
 
 model StockOut {
-  id     String   @id @default(uuid()) @db.VarChar(36)
-  itemId String   @db.VarChar(36)
-  qty    Int
-  date   DateTime @default(now())
-  reason String?
-  item   Item     @relation(fields: [itemId], references: [id], map: "StockOut_itemId_fkey")
+  id       String   @id @default(uuid()) @db.VarChar(36)
+  itemId   String   @db.VarChar(36)
+  qty      Int
+  date     DateTime @default(now())
+  reason   String?
+  borrower String?
+  item     Item     @relation(fields: [itemId], references: [id], map: "StockOut_itemId_fkey")
 
   @@index([itemId], map: "StockOut_itemId_fkey")
   @@map("stockout")

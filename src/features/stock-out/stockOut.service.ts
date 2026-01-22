@@ -10,7 +10,8 @@ export const getAll = (): Promise<StockOut[]> => {
 export const create = async (
   itemId: string,
   qty: number,
-  reason?: string
+  reason?: string,
+  borrower?: string
 ): Promise<StockOut> => {
   if (qty <= 0) {
     throw new Error("Quantity must be positive");
@@ -47,7 +48,7 @@ export const create = async (
 
     // Create stock out record
     return tx.stockOut.create({
-      data: { itemId, qty, reason },
+      data: { itemId, qty, reason, borrower },
       include: { item: true },
     });
   });

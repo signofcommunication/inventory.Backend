@@ -41,7 +41,7 @@ router.use(
 router.use(
   "/suppliers",
   authMiddleware,
-  roleGuard([Role.SUPERADMIN, Role.ADMIN]),
+  roleGuard([Role.SUPERADMIN, Role.ADMIN, Role.PETUGAS_GUDANG]),
   supplierRoutes
 );
 

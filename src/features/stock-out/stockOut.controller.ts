@@ -37,9 +37,13 @@ export const getAll = async (req: Request, res: Response) => {
  *             type: object
  *             properties:
  *               itemId:
- *                 type: integer
+ *                 type: string
  *               qty:
  *                 type: integer
+ *               reason:
+ *                 type: string
+ *               borrower:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Stock out created successfully
@@ -50,11 +54,11 @@ export const getAll = async (req: Request, res: Response) => {
  */
 export const create = async (req: Request, res: Response) => {
   try {
-    const { itemId, qty } = req.body;
+    const { itemId, qty, reason, borrower } = req.body;
     if (!itemId || !qty) {
       return res.status(400).json(errorResponse("itemId and qty are required"));
     }
-    const data = await service.create(itemId, qty);
+    const data = await service.create(itemId, qty, reason, borrower);
     res
       .status(201)
       .json(successResponse(data, "Stock out created successfully"));
